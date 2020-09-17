@@ -42,7 +42,7 @@ export default function Home() {
     <div onMouseMove={onMouseMove} className="window" style={{position: 'relative', width: '100vw', height: '100vh'}}>
       Hello! This demo works better with friends. Share the link with someone!
       <pre>{JSON.stringify(positions)}</pre>
-      {positions.map(({x, y}, idx) => (
+      {Object.values(positions).map(({x, y}, idx) => (
         <div style={{position: 'absolute', top: y, left: x}}>{idx}</div>
       ))}
     </div>
