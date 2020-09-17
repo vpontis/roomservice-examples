@@ -43,8 +43,14 @@ export default function Home() {
       Hello! This demo works better with friends. Share the link with someone!
       <pre>{JSON.stringify(positions)}</pre>
       {Object.values(positions).map(({x, y}, idx) => (
-        <div style={{position: 'absolute', top: y, left: x}}>{idx}</div>
+        <div key={idx} className="marker" style={{position: 'absolute', top: y, left: x}}>{idx}</div>
       ))}
+
+      <style jsx={true}>{`
+        .marker {
+          transition: all 0.25s
+        }
+      `}</style>
     </div>
   );
 }
