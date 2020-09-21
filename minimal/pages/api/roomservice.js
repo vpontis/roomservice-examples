@@ -1,16 +1,11 @@
+import cookie from "cookie";
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 const API_KEY = "U4cdUNKzQEOXQ7egQjdd3";
 
-function getRandomInt(min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
 export default async (req, res) => {
   const body = req.body;
-  const user = "some-user-" + getRandomInt(1, 200);
+  const user = cookie.parse(req.headers?.cookie || {})["user.id"];
 
   const r = await fetch("https://super.roomservice.dev/provision", {
     method: "post",
