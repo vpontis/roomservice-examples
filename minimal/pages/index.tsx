@@ -64,11 +64,11 @@ function usePresence<T>({
     const p = await room.presence();
     setPresence(p);
 
-    const initialMap = await p.getAll(key);
+    const initialMap = await p.getAll<T>(key);
     setPresenceMap(initialMap);
 
     // TODO: how do we unsubscribe
-    return room.subscribe(p, key, (map) => {
+    return room.subscribe<T>(p, key, (map) => {
       console.timeEnd(`Presence ${key}`);
       console.log(map);
       setPresenceMap(map);
@@ -167,6 +167,7 @@ function useChat({
     [messages]
   );
 
+  // @ts-ignore
   return { messages: messages ? messages.toArray() : null, addMessage };
 }
 
