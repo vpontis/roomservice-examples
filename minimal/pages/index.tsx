@@ -105,6 +105,93 @@ function useRoomUsers({ roomId, key }): { users: string[] } {
   return { users };
 }
 
+type ChatMessage = {
+  fromName: string;
+  fromEmoji: string;
+  createdAt: string;
+  message: string;
+};
+
+function useChat({
+  roomId,
+  key,
+  numMessages,
+}: {
+  roomId: string;
+  key: string;
+  numMessages: number;
+}): { messages: ChatMessage[]; addMessage: (message: ChatMessage) => null } {
+  const [messages, setMessages] = useState(null);
+
+  async function load() {
+    const rs = new RoomService({
+      auth: "/api/roomservice",
+    });
+
+    const room = await rs.room(roomId);
+    const m = await room.list(key);
+    console.log("m", m);
+
+    // @ts-ignore
+    setMessages(m);
+
+    // TODO: how do we unsubscribe
+    return room.subscribe(m, (_messages) => {
+      console.log("okkkkkkkkkkkk");
+      console.timeEnd(`List ${key}`);
+
+      // @ts-ignore
+      setMessages(_messages);
+
+      console.time(`List ${key}`);
+    });
+  }
+
+  useEffect(() => {
+    load().catch(console.error);
+  }, []);
+
+  const addMessage = useCallback(
+    (message) => {
+      if (!messages) {
+        return;
+      }
+
+      let _messages = messages.push(message);
+      if (_messages.toArray().length > numMessages) {
+        _messages = _messages.delete(0);
+      }
+
+      setMessages(_messages);
+    },
+    [messages]
+  );
+
+  return { messages: messages ? messages.toArray() : null, addMessage };
+}
+
+const ChatInput = ({ onSubmit }) => {
+  const [value, setValue] = useState("");
+
+  return (
+    <div>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+      />
+      <button
+        onClick={() => {
+          setValue("");
+          onSubmit(value);
+        }}
+      >
+        Send
+      </button>
+    </div>
+  );
+};
+
 export default function Home() {
   const [currentUser] = useCookieState(
     "user.id",
@@ -118,6 +205,13 @@ export default function Home() {
     key: "location",
     expireSec: 5,
   });
+
+  const { messages, addMessage } = useChat({
+    roomId: "demo-2",
+    key: "chat",
+    numMessages: 5,
+  });
+  console.log(messages);
 
   const { users } = useRoomUsers({
     roomId: "demo-2",
@@ -138,6 +232,25 @@ export default function Home() {
       style={{ position: "relative", width: "100vw", height: "100vh" }}
     >
       Hello! This demo works better with friends. Share the link with someone!
+      <ChatInput
+        onSubmit={(value) => {
+          addMessage({
+            fromEmoji: "😃",
+            fromName: currentUser as string,
+            createdAt: new Date().toISOString(),
+            message: value,
+          });
+        }}
+      />
+      <div>
+        {messages?.map(({ fromName, message }) => {
+          return (
+            <div>
+              {fromName} {message}
+            </div>
+          );
+        })}
+      </div>
       <div>
         <div>
           <b>Users - I am {currentUser}</b>
